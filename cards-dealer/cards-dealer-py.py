@@ -14,7 +14,7 @@ class Card(object):
 
 class Deck(object):
     def __init__(self):
-        self.cards = []
+        self.cards = [] 
         self.build()
 
     def build(self):

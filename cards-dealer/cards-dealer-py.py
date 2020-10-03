@@ -32,12 +32,10 @@ class Deck(object):
         for i in range(4):
             for s in suits:
                 for n in range(len(names)):
-                    self.cards.append(Card(s, names[n], values[n], i))
+                    self.cards.append(Card(s, names[n], values[n], i + 1))
 
     def shuffle(self):
-        for i in range(len(self.cards)-1, 0, -1):
-            rand = random.randint(0, i)
-            self.cards[i], self.cards[rand] = self.cards[rand], self.cards[i]
+        random.shuffle(self.cards)
 
     def draw(self):
         return self.cards.pop()
@@ -48,21 +46,35 @@ class Deck(object):
 
 
 class Player(object):
-    def __init__(self, hand):
-        self.hand = hand
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
 
-    def getcards(self):
-        for _ in range(2):
-            self.hand.append()
+    def draw(self, deck):
+        self.hand.append(deck.draw())
+        return self # For chaining.
 
     def calcscore(self):
         score = 0
         for i in self.hand:
             score += i.value
+        return score
+
+    def show(self):
+        for c in self.hand:
+            c.show()
+
 
 deck = Deck()
 deck.shuffle()
+# print(deck.show())
 
-print(deck.show())
-card = deck.draw()
-card.show()
+me = Player("Alexander")
+# me.draw(deck).draw(deck)
+
+while(me.calcscore() < 16):
+    me.draw(deck)
+
+me.show()
+
+print(me.calcscore())

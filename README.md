@@ -1,1 +1,5 @@
-# bj-splitter-py
+# The bj splitter project 
+
+Python version
+
+

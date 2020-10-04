@@ -9,12 +9,12 @@ class Card(object):
         self.deck = deck
 
     def show(self):
-        print(self.name + " of " + self.suit + " (D: " + str(self.deck) + ")")
+        print(f"{self.name} of {self.suit} (Deck: {str(self.deck)})")
 
 
 class Deck(object):
     def __init__(self):
-        self.cards = [] 
+        self.cards = []
         self.build()
 
     def build(self):
@@ -42,39 +42,58 @@ class Deck(object):
 
     def show(self):
         for c in self.cards:
-            print(c.name + " of " + c.suit + " (D: " + str(c.deck) + ")")
+            c.show()
 
 
 class Player(object):
     def __init__(self, name):
         self.name = name
         self.hand = []
+        self.score = 0
 
     def draw(self, deck):
         self.hand.append(deck.draw())
-        return self # For chaining.
+        return self  # For chaining.
 
     def calcscore(self):
-        score = 0
-        for i in self.hand:
-            score += i.value
-        return score
+        for c in self.hand:
+            self.score += c.value
 
     def show(self):
+        print(self.name)
         for c in self.hand:
             c.show()
+        print(self.score)
+        print("\n")
 
 
-deck = Deck()
-deck.shuffle()
-# print(deck.show())
+class Table(object):
+    def __init__(self, name):
+        self.name = name
+        self.deck = Deck()
+        self.dealer = Player("Dealer")
+        self.players = []
+        self.build()
 
-me = Player("Alexander")
-# me.draw(deck).draw(deck)
+    def build(self):
+        self.players.append(self.dealer)
+        for i in range(3):
+            self.players.append(Player(f"Player{i + 1}"))
 
-while(me.calcscore() < 16):
-    me.draw(deck)
+    def play(self):
+        self.deck.shuffle()
+        for p in self.players:
+            for _ in range(2):
+                p.draw(self.deck)
+            p.calcscore()
 
-me.show()
+    def show(self):
+        for p in self.players:
+            p.show()
 
-print(me.calcscore())
+
+t1 = Table("T1")
+print(str((len(t1.deck.cards))))
+t1.play()
+t1.show()
+print(str((len(t1.deck.cards))))

@@ -93,6 +93,11 @@ class Table(object):
         while(self.dealer.score < 17):  # Dealer has to stop at 17 or higher.
             self.dealer.draw(self.deck)
             self.dealer.calcscore()
+
+        if(self.dealer.score > 21):
+            self.dealer.status = "bust"
+        elif(self.dealer.score < 22 and self.dealer.score > 16):
+            self.dealer.status = "good"
         # Players.
         for p in self.players:
             for _ in range(2):
@@ -101,7 +106,7 @@ class Table(object):
 
             # Calculate when to draw another card.
             if((self.dealer.hand[0].value > 7 and self.dealer.hand[0].value > p.score - 10) or p.score < 12):
-                while((p.score < self.dealer.hand[0].value + 10) or p.score < 17): # Something goes wrong here!
+                while((p.score < self.dealer.hand[0].value + 10) and p.score < 17): # Something goes wrong here!
                     p.draw(self.deck)
                     p.calcscore()
 

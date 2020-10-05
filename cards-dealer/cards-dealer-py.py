@@ -28,7 +28,7 @@ class Deck(object):
             "Seven", "Eight", "Nine",
             "Ten", "Jack", "Queen", "King",
         ]
-        values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+        values = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
         for i in range(4):
             for s in suits:
                 for n in range(len(names)):
@@ -76,6 +76,7 @@ class Table(object):
         self.dealer = Player("Dealer")
         self.players = []
         self.build()
+        self.scoreboard = {}
 
     def build(self):
         # self.players.append(self.dealer)
@@ -94,10 +95,14 @@ class Table(object):
             self.dealer.draw(self.deck)
             self.dealer.calcscore()
 
+        # Dealer status.
         if(self.dealer.score > 21):
             self.dealer.status = "bust"
-        elif(self.dealer.score < 22 and self.dealer.score > 16):
+        elif(self.dealer.score == 21 and len(self.dealer.hand) == 2):
+            self.dealer.status = "blackjack"
+        else:
             self.dealer.status = "good"
+
         # Players.
         for p in self.players:
             for _ in range(2):
@@ -105,14 +110,14 @@ class Table(object):
             p.calcscore()  # Calculate score.
 
             # Calculate when to draw another card.
-            if((self.dealer.hand[0].value > 7 and self.dealer.hand[0].value > p.score - 10) or p.score < 12):
-                while((p.score < self.dealer.hand[0].value + 10) and p.score < 17): # Something goes wrong here!
+            if((self.dealer.hand[0].value > 6 and self.dealer.hand[0].value > p.score - 10) or p.score < 12):
+                # Something goes wrong here!
+                while((p.score < self.dealer.hand[0].value + 10) and p.score < 17):
                     p.draw(self.deck)
                     p.calcscore()
 
-            if(p.score == 21 and len(p.hand) < 3):
-                p.status == "blackjack"
-            if((p.score < 22 and self.dealer.score > 21) or (p.score > self.dealer.score and p.score < 22)):
+            # Player status.
+            if((p.score < 22 and self.dealer.score > 21) or (p.score < 22 and p.score > self.dealer.score)):
                 p.status = "win"
             elif(p.score > 21):
                 p.status = "bust"
@@ -120,6 +125,17 @@ class Table(object):
                 p.status = "push"
             else:
                 p.status = "lost"
+
+            if(p.score == 21 and len(p.hand) == 2):
+                p.status = "blackjack"
+            # if(self.dealer.status != "blackjack" and p.status == "blackjack"):
+                # p.status = "win"
+            if(self.dealer.status == "blackjack" and p.status != "blackjack"):
+                p.status = "lost"
+            if (self.dealer.status == "blackjack" and p.status == "blackjack"):
+                p.status = "push"
+
+            
 
     def show(self):
         self.dealer.show()

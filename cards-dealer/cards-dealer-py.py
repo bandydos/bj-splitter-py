@@ -9,13 +9,15 @@ class Card(object):
         self.deck = deck
 
     def show(self):
-        print(f"{self.name} of {self.suit} (Deck: {str(self.deck)})")
+        print(
+            f"{self.name} of {self.suit} (value: {self.value}) (deck: {str(self.deck)})")
 
 
 class Deck(object):
     def __init__(self):
         self.cards = []
         self.build()
+        self.shuffle()
 
     def build(self):
         suits = [
@@ -28,7 +30,8 @@ class Deck(object):
             "Seven", "Eight", "Nine",
             "Ten", "Jack", "Queen", "King",
         ]
-        values = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+        values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+
         for i in range(4):
             for s in suits:
                 for n in range(len(names)):
@@ -56,10 +59,8 @@ class Player(object):
         self.hand.append(deck.draw())
         return self  # For chaining.
 
-    def calcscore(self):
-        self.score = 0  # Set score back to 0.
-        for c in self.hand:
-            self.score += c.value  # Calc total.
+    def calc_score(self):
+        self.score = sum(c.value for c in self.hand)
 
     def show(self):
         print(self.name)
@@ -73,93 +74,77 @@ class Table(object):
     def __init__(self, name):
         self.name = name
         self.deck = Deck()
-        self.dealer = Player("Dealer")
+        self.deck.shuffle()
         self.players = []
         self.build()
 
     def build(self):
-        # self.players.append(self.dealer)
+        self.players.append(Player("Dealer"))
         for i in range(3):
             self.players.append(Player(f"Player {i + 1}"))
 
+    def update_score(self):
+        for p in self.players:
+            p.calc_score()
+            for c in p.hand:
+                if c.value == 1 and p.score <= 11:
+                    c.value = 11
+                    p.calc_score()
+                if c.value == 11 and p.score > 21:
+                    c.value = 1
+                    p.calc_score()
+
     def play(self):
-        self.deck.shuffle()  # Shuffle the deck.
+        dealer = self.players[0]
 
-        # Dealer.
-        d = self.dealer
-        for _ in range(2):
-            d.draw(self.deck)  # Dealer draws 2 cards.
-        d.calcscore()  # Calculate score.
-
-        # When dealt 2 aces.
-        if(d.score == 22 and len(d.hand) == 2):
-            d.hand[1].val = 1
-            d.calcscore()
-
-        while(d.score < 17):  # Dealer has to stop at 17 or higher.
-            d.draw(self.deck)
-            d.calcscore()
-
-            # Check for aces when busting.
-            if(d.score > 21):
-                for c in d.hand:
-                    if(c.val == 11):
-                        c.val = 1
-                        d.calcscore()
+        while dealer.score < 17:  # Dealer has to stop at 17 or higher.
+            dealer.draw(self.deck)
+            self.update_score()
 
         # Dealer status.
-        if (d.score > 21):
-            d.status = "bust"
-        elif(d.score == 21 and len(d.hand) == 2):
-            d.status = "blackjack"
+        if dealer.score > 21:
+            dealer.status = "bust"
+        elif dealer.score == 21 and len(dealer.hand) == 2:
+            dealer.status = "blackjack"
         else:
-            d.status = "good"
+            dealer.status = "good"
 
         # Players.
-        for p in self.players:
+        for p in self.players[1:]:
             for _ in range(2):
                 p.draw(self.deck)  # Players draw 2 cards.
-            p.calcscore()  # Calculate score.
-
-            if (p.score == 2 and len(p.hand) == 2):
-                p.hand[1].val = 1
-                p.calcscore()
+                self.update_score()
 
             # Calculate when to draw another card.
-            if ((d.hand[0].value >= 7 and p.score - 10 <= d.hand[0].value) or p.score <= 11):
+            if (dealer.hand[0].value >= 7 and p.score - 10 <= dealer.hand[0].value) or p.score <= 11:
                 # Something goes wrong here!
-                while p.score - 10 <= d.hand[0].value and p.score < 17:
+                while p.score - 10 <= dealer.hand[0].value and p.score < 17:
                     p.draw(self.deck)
-                    p.calcscore()
-
-                    # Check for aces when busting.
-                    if (p.score > 21):
-                        for c in p.hand:
-                            if (c.val == 11):
-                                c.val = 1
-                                p.calcscore()
+                    self.update_score()
 
             # Player status.
-            if((p.score < 22 and d.score > 21) or (p.score < 22 and p.score > d.score)):
+            if (p.score < 22 and dealer.score > 21) or (p.score < 22 and p.score > dealer.score):
                 p.status = "win"
-            elif(p.score > 21):
+            elif p.score > 21:
                 p.status = "bust"
-            elif(p.score == d.score):
+            elif p.score == dealer.score:
                 p.status = "push"
             else:
                 p.status = "lost"
 
-            if(p.score == 21 and len(p.hand) == 2):
+            if p.score == 21 and len(p.hand) == 2:
                 p.status = "blackjack"
             # if(self.dealer.status != "blackjack" and p.status == "blackjack"):
                 # p.status = "win"
-            if(d.status == "blackjack" and p.status != "blackjack"):
+            if dealer.status == "blackjack" and p.status != "blackjack":
                 p.status = "lost"
-            if (d.status == "blackjack" and p.status == "blackjack"):
+            if dealer.status == "blackjack" and p.status == "blackjack":
                 p.status = "push"
 
+        if len(self.deck.cards) < 50:
+            self.deck = Deck()
+
     def show(self):
-        self.dealer.show()
         for p in self.players:
             p.show()
 

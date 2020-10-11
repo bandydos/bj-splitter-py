@@ -256,6 +256,6 @@ def process_games(table, simulations):
 
 if __name__ == '__main__':
     tA1 = Table('A1', 6) # Create table.
-    simulations = 100000 # Amount of simulations.
+    simulations = 1000 # Amount of simulations.
 
     process_games(tA1, simulations) # Process games with args.

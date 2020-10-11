@@ -14,5 +14,5 @@ Make a simple blackjack simulator in python.
 * [x] create classes (card, deck, player...) 
 * [x] think about basic play and score calculation
 * [ ] figure out different tactics
-* [ ] do case testing with percentages
+* [x] do case testing with percentages
 * [ ] ...
